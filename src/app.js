@@ -3,16 +3,12 @@ const connectDB = require("./config/database"); // This establishes the link bet
 const app = express();
 const User = require("./models/user");
 
+// The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
   // Creating an instance of User from the user model
-  const user = new User({
-    firstName: "Prajwal",
-    lastName: "Nilopant",
-    emailId: "pj1@gmail.com",
-    password: "pj@123",
-    gender: "Male",
-    age: 26,
-  });
+  const user = new User(req.body);
 
   // Recommended to do all the DB operations inside try-catch
   try {
