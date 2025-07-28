@@ -20,6 +20,37 @@ app.post("/signup", async (req, res) => {
   }
 });
 
+// GET only one user using findOne() method
+app.get("/user", async (req, res) => {
+  const userEmail = req.body.emailId;
+  try {
+    const user = await User.findOne({ emailId: userEmail });
+    console.log(user);
+    if (!user) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(user);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong!");
+  }
+});
+
+// GET all users using find() method
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    console.log(users);
+    if (users.length === 0) {
+      res.status(404).send("No users found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(400).send("Something went wrong!");
+  }
+});
+
 // Proper way of establishing a DB connection
 connectDB()
   .then(() => {
