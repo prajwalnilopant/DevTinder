@@ -66,11 +66,15 @@ app.delete("/user", async (req, res) => {
 // Updating the data of the User.
 app.patch("/user", async (req, res) => {
   const userId = req.body.userId;
+  const data = req.body;
   try {
-    const user = await User.findByIdAndUpdate(userId, { emailId: "prajwal@gmail.com" });
+    const user = await User.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
     res.send("User data updated successfully");
   } catch (err) {
-    res.status(400).send("Something went wrong!");
+    res.status(400).send("UPDATE FAILED" + err.message);
   }
 });
 
