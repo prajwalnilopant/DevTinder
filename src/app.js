@@ -8,6 +8,7 @@ const bcrypt = require("bcrypt");
 // The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
 app.use(express.json());
 
+//Sign-Up API
 app.post("/signup", async (req, res) => {
   // Recommended to do all the DB operations inside try-catch
   try {
@@ -29,6 +30,27 @@ app.post("/signup", async (req, res) => {
     // save() function usually returns a promise. So, it is recommended to be handled with the help of async-await
     await user.save();
     res.send("User added successfully!");
+  } catch (err) {
+    res.status(400).send("Error saving the User:" + err.message);
+  }
+});
+
+// Login API
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invalid Credentials!");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (isPasswordValid) {
+      res.send("Login Successful!");
+    } else {
+      throw new Error("Invalid Credetials");
+    }
   } catch (err) {
     res.status(400).send("Error saving the User:" + err.message);
   }
