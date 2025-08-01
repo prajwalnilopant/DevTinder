@@ -2,16 +2,30 @@ const express = require("express");
 const connectDB = require("./config/database"); // This establishes the link between the database and our App
 const app = express();
 const User = require("./models/user");
+const { validateSignUpData } = require("./utils/validate");
+const bcrypt = require("bcrypt");
 
 // The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
 app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  // Creating an instance of User from the user model
-  const user = new User(req.body);
-
   // Recommended to do all the DB operations inside try-catch
   try {
+    // Validating the data
+    validateSignUpData(req);
+
+    const { firstName, lastName, emailId, password } = req.body;
+
+    // Encrypting the password..
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Creating an instance of User from the user model
+    const user = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashedPassword,
+    });
     // save() function usually returns a promise. So, it is recommended to be handled with the help of async-await
     await user.save();
     res.send("User added successfully!");
