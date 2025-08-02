@@ -4,9 +4,12 @@ const app = express();
 const User = require("./models/user");
 const { validateSignUpData } = require("./utils/validate");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
 
 // The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
 app.use(express.json());
+app.use(cookieParser()); // This method is used to read the cookies. Without this, we would get undefined if there is no parser.
 
 //Sign-Up API
 app.post("/signup", async (req, res) => {
@@ -47,12 +50,39 @@ app.post("/login", async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (isPasswordValid) {
+      // Create a JWT Token
+      const token = await jwt.sign({ _id: user._id }, "D3V#Tind3r786");
+
+      // Add the token to cookie and send the response back to the user.
+      res.cookie("token", token);
+
       res.send("Login Successful!");
     } else {
       throw new Error("Invalid Credetials");
     }
   } catch (err) {
     res.status(400).send("Error saving the User:" + err.message);
+  }
+});
+
+// Get the User profile.
+app.get("/profile", async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    const { token } = cookies;
+    if (!token) {
+      throw new Error("Invalid Token");
+    }
+
+    const decodedMessage = await jwt.verify(token, "D3V#Tind3r786");
+    const { _id } = decodedMessage;
+    const user = await User.findById(_id);
+    if (!user) {
+      throw new Error("User does not exist!");
+    }
+    res.send(user);
+  } catch (err) {
+    res.status(400).send("Something went wrong!" + err.message);
   }
 });
 
