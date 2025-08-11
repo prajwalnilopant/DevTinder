@@ -6,6 +6,7 @@ const { validateSignUpData } = require("./utils/validate");
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 // The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
 app.use(express.json());
@@ -48,13 +49,15 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials!");
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.validatePassword(password);
     if (isPasswordValid) {
       // Create a JWT Token
-      const token = await jwt.sign({ _id: user._id }, "D3V#Tind3r786");
+      const token = await user.getJWT();
 
       // Add the token to cookie and send the response back to the user.
-      res.cookie("token", token);
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
 
       res.send("Login Successful!");
     } else {
@@ -66,92 +69,20 @@ app.post("/login", async (req, res) => {
 });
 
 // Get the User profile.
-app.get("/profile", async (req, res) => {
+app.get("/profile", userAuth, async (req, res) => {
   try {
-    const cookies = req.cookies;
-    const { token } = cookies;
-    if (!token) {
-      throw new Error("Invalid Token");
-    }
-
-    const decodedMessage = await jwt.verify(token, "D3V#Tind3r786");
-    const { _id } = decodedMessage;
-    const user = await User.findById(_id);
-    if (!user) {
-      throw new Error("User does not exist!");
-    }
+    const user = req.user;
     res.send(user);
   } catch (err) {
     res.status(400).send("Something went wrong!" + err.message);
   }
 });
 
-// GET only one user using findOne() method
-app.get("/user", async (req, res) => {
-  const userEmail = req.body.emailId;
-  try {
-    const user = await User.findOne({ emailId: userEmail });
-    console.log(user);
-    if (!user) {
-      res.status(404).send("User not found");
-    } else {
-      res.send(user);
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong!");
-  }
-});
-
-// GET all users using find() method
-app.get("/feed", async (req, res) => {
-  try {
-    const users = await User.find({});
-    console.log(users);
-    if (users.length === 0) {
-      res.status(404).send("No users found");
-    } else {
-      res.send(users);
-    }
-  } catch (err) {
-    res.status(400).send("Something went wrong!");
-  }
-});
-
-// Delete a User from a Database.
-app.delete("/user", async (req, res) => {
-  const userId = req.body.userId;
-  try {
-    const user = await User.findByIdAndDelete({ _id: userId });
-    // const user = await User.findByIdAndDelete(userId) -> This and above statements are one in the same.
-    res.send("User deleted successfully");
-  } catch (err) {
-    res.status(400).send("Something went wrong!");
-  }
-});
-
-// Updating the data of the User.
-app.patch("/user/:userId", async (req, res) => {
-  const userId = req.params?.userId;
-  const data = req.body;
-  try {
-    const ALLOWED_UPDATES = ["photoUrl", "about", "gender", "age", "skills"];
-    const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
-    // Below two conditionals are API Level Sanitizations/ Validations
-    if (!isUpdateAllowed) {
-      throw new Error("Update not allowed");
-    }
-    if (data?.skills.length > 10) {
-      throw new Error("Skills cannot be more than 10");
-    }
-
-    const user = await User.findByIdAndUpdate(userId, data, {
-      returnDocument: "after",
-      runValidators: true,
-    });
-    res.send("User data updated successfully");
-  } catch (err) {
-    res.status(400).send("UPDATE FAILED" + err.message);
-  }
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  const user = req.user;
+  // Sending a connection request
+  console.log("Sending a connection request");
+  res.send(user.firstName + "sent the connection request!");
 });
 
 // Proper way of establishing a DB connection
