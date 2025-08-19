@@ -10,10 +10,12 @@ app.use(cookieParser()); // This method is used to read the cookies. Without thi
 const requestRouter = require("./routes/requests");
 const profileRouter = require("./routes/profile");
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 // Proper way of establishing a DB connection
 connectDB()
