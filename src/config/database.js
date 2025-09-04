@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 
 // Mongoose.connect returns a promise. It is better to wrap it inside an Async function.
 const connectDB = async () => {
-  await mongoose.connect("mongodb+srv://prajwalnilopant:abZqw6GGJgIo9K6y@namastenode.d7ijnkr.mongodb.net/?retryWrites=true&w=majority&appName=NamasteNode/devTinder"); // Connecting to cluster within a DB
+  await mongoose.connect(process.env.DB_CONNECTION_STRING); // Connecting to cluster within a DB
 };
 
 module.exports = connectDB;

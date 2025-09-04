@@ -2,6 +2,7 @@ const express = require("express");
 const requestRouter = express.Router();
 
 const { userAuth } = require("../middlewares/auth");
+const sendEmail = require("../utils/sendEmail");
 
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
@@ -40,6 +41,11 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
       status,
     });
     const data = await connectionRequest.save();
+
+    // Logic to send the Email using Amazon SES
+    // const emailRes = await sendEmail.run("A new friend request from " + req.user.firstName, req.user.firstName + " is " + status + " in " + toUser.firstName);
+    // console.log(emailRes);
+
     res.json({
       message: req.user.firstName + " " + status + " in " + toUser.firstName,
       data,

@@ -3,6 +3,7 @@ const connectDB = require("./config/database"); // This establishes the link bet
 const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+require("dotenv").config();
 
 // The below method is used to Parse the JSON data into JS Object. Without parsing we cannot use JSON objects directly within JS.
 app.use(express.json());
@@ -30,7 +31,7 @@ app.use("/", userRouter);
 connectDB()
   .then(() => {
     console.log("Connected to the Database Successfully!");
-    app.listen(7777, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Listening on port 7777");
     });
   })
