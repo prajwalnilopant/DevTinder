@@ -8,6 +8,10 @@ const createSendEmailCommand = (toAddress, fromAddress, subject, body) => {
       ToAddresses: [toAddress],
     },
     Message: {
+      Subject: {
+        Charset: "UTF-8",
+        Data: subject,
+      },
       Body: {
         Html: {
           Charset: "UTF-8",
@@ -18,10 +22,6 @@ const createSendEmailCommand = (toAddress, fromAddress, subject, body) => {
           Data: "This is the text format email",
         },
       },
-    },
-    Subject: {
-      Charset: "UTF-8",
-      Data: subject,
     },
     Source: fromAddress,
     ReplyToAddresses: [],

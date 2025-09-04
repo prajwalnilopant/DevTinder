@@ -43,8 +43,14 @@ requestRouter.post("/request/send/:status/:toUserId", userAuth, async (req, res)
     const data = await connectionRequest.save();
 
     // Logic to send the Email using Amazon SES
-    // const emailRes = await sendEmail.run("A new friend request from " + req.user.firstName, req.user.firstName + " is " + status + " in " + toUser.firstName);
-    // console.log(emailRes);
+
+    console.log(process.env.AWS_ACCESS_KEY_ID);
+    console.log(process.env.AWS_SECRET_ACCESS_KEY);
+
+    sendEmail
+      .run(`A new friend request from ${req.user.firstName}`, `${req.user.firstName} has ${status} the request with ${toUser.firstName}`)
+      .then((res) => console.log("Email sent:", res))
+      .catch((err) => console.error("Email failed:", err));
 
     res.json({
       message: req.user.firstName + " " + status + " in " + toUser.firstName,
